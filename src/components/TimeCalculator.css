@@ -57,3 +57,32 @@ button {
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Table Styling */
+table {
+  width: 80%;
+  margin: 2rem auto;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+th,
+td {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+thead {
+  background-color: #8d8a8a;
+}
+
+/* Hover effect for table rows */
+tr:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Center Text in Table Header and Rows */
+th,
+td {
+  text-align: center;
+}
