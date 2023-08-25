@@ -1,78 +1,95 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import "./TimeCalculator.css"; // Import the CSS
 
 const TimeCalculator = () => {
-  const [arrivalTime, setArrivalTime] = useState("");
-  const [leavingTime, setLeavingTime] = useState("");
-  const [workedTime, setWorkedTime] = useState("");
+  const [timeData, setTimeData] = useState("");
+  const [workedTimes, setWorkedTimes] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
-
-  const arrivalTimeRef = useRef(null); // Create a ref for the arrival time input field
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "c" || e.key === "C") {
-        setArrivalTime("");
-        setLeavingTime("");
-        setWorkedTime("");
-        arrivalTimeRef.current.focus(); // Set focus back to the first input field
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
   const calculateWorkedTime = (e) => {
     e.preventDefault();
 
-    const enteredArrivalHour = Math.floor(arrivalTime / 100);
-    const enteredArrivalMinute = arrivalTime % 100;
-    const enteredLeavingHour = Math.floor(leavingTime / 100);
-    const enteredLeavingMinute = leavingTime % 100;
+    const lines = timeData.split("\n").filter((line) => line.trim() !== "");
+    const newWorkedTimes = lines.map((line) => {
+      const [date, arrivalTime, leavingTime] = line.split(/\s+/);
+      const enteredArrivalHour = Math.floor(arrivalTime / 100);
+      const enteredArrivalMinute = arrivalTime % 100;
+      const enteredLeavingHour = Math.floor(leavingTime / 100);
+      const enteredLeavingMinute = leavingTime % 100;
 
-    let workedHours = enteredLeavingHour - enteredArrivalHour;
-    let workedMinutes = enteredLeavingMinute - enteredArrivalMinute;
+      let workedHours = enteredLeavingHour - enteredArrivalHour;
+      let workedMinutes = enteredLeavingMinute - enteredArrivalMinute;
 
-    if (workedMinutes < 0) {
-      workedMinutes += 60;
-      workedHours -= 1;
-    }
+      if (workedMinutes < 0) {
+        workedMinutes += 60;
+        workedHours -= 1;
+      }
 
-    setWorkedTime(`${workedHours} hours and ${workedMinutes} minutes`);
+      let overtimeMinutes = 0;
+      let lackTimeMinutes = 0;
+
+      if (workedHours >= 8) {
+        overtimeMinutes = (workedHours - 8) * 60 + workedMinutes;
+      } else {
+        lackTimeMinutes = (8 - workedHours) * 60 - workedMinutes;
+      }
+
+      return {
+        date,
+        workedHours,
+        workedMinutes,
+        overtimeMinutes,
+        lackTimeMinutes,
+      };
+    });
+
+    setWorkedTimes(newWorkedTimes);
   };
 
   return (
     <div className={darkMode ? "dark-mode" : "light-mode"}>
       <h1>Work Time Calculator</h1>
       <form onSubmit={calculateWorkedTime}>
-        <input
-          ref={arrivalTimeRef} // Use the ref here
-          type="number"
-          placeholder="Enter your arrival time (e.g., 915)"
-          value={arrivalTime}
-          onChange={(e) => setArrivalTime(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Enter your leaving time (e.g., 1700)"
-          value={leavingTime}
-          onChange={(e) => setLeavingTime(e.target.value)}
+        <textarea
+          rows="10"
+          placeholder="Paste your time data here (e.g., 2021-08-24 915 1700)"
+          value={timeData}
+          onChange={(e) => setTimeData(e.target.value)}
         />
         <button type="submit">Calculate</button>
       </form>
-      <p>Time worked: {workedTime}</p>
+      <h2>Calculated Work Times</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>WorkTime</th>
+            <th>Overtime</th>
+            <th>Time Lacking</th>
+          </tr>
+        </thead>
+        <tbody>
+          {workedTimes.map((time, index) => (
+            <tr key={index}>
+              <td>{time.date}</td>
+              <td>{`${time.workedHours} hours and ${time.workedMinutes} minutes`}</td>
+              <td>
+                {time.overtimeMinutes > 0
+                  ? `${time.overtimeMinutes} minutes`
+                  : ""}
+              </td>
+              <td>
+                {time.lackTimeMinutes > 0
+                  ? `${time.lackTimeMinutes} minutes`
+                  : ""}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
       <button onClick={() => setDarkMode(!darkMode)}>
         Toggle {darkMode ? "Light" : "Dark"} Mode
       </button>
-      <br />
-      <br />
-      <br />
-      <br />
-      <h4>From: Yasser</h4>
-      <h4>To: Jomanah</h4>
     </div>
   );
 };
