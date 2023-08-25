@@ -12,10 +12,13 @@ const TimeCalculator = () => {
     const lines = timeData.split("\n").filter((line) => line.trim() !== "");
     const newWorkedTimes = lines.map((line) => {
       const [date, arrivalTime, leavingTime] = line.split(/\s+/);
-      const enteredArrivalHour = Math.floor(arrivalTime / 100);
-      const enteredArrivalMinute = arrivalTime % 100;
-      const enteredLeavingHour = Math.floor(leavingTime / 100);
-      const enteredLeavingMinute = leavingTime % 100;
+
+      const [enteredArrivalHour, enteredArrivalMinute] = arrivalTime
+        .split(":")
+        .map(Number);
+      const [enteredLeavingHour, enteredLeavingMinute] = leavingTime
+        .split(":")
+        .map(Number);
 
       let workedHours = enteredLeavingHour - enteredArrivalHour;
       let workedMinutes = enteredLeavingMinute - enteredArrivalMinute;
@@ -52,7 +55,7 @@ const TimeCalculator = () => {
       <form onSubmit={calculateWorkedTime}>
         <textarea
           rows="10"
-          placeholder="Paste your time data here (e.g., 2021-08-24 915 1700)"
+          placeholder="Paste your time data here (e.g., 2021-08-24 9:15 17:00)"
           value={timeData}
           onChange={(e) => setTimeData(e.target.value)}
         />
