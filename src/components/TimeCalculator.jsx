@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./TimeCalculator.css"; // Import the CSS
 
 const TimeCalculator = () => {
@@ -20,20 +20,27 @@ const TimeCalculator = () => {
         .split(":")
         .map(Number);
 
-      let workedHours = enteredLeavingHour - enteredArrivalHour;
-      let workedMinutes = enteredLeavingMinute - enteredArrivalMinute;
+      // Update arrival time based on the condition
+      const anchorArrivalHour = enteredArrivalHour < 9 ? 9 : enteredArrivalHour;
+      const anchorArrivalMinute =
+        enteredArrivalHour < 9 ? 0 : enteredArrivalMinute;
+
+      // Update leaving time based on the condition
+      const anchorLeavingHour =
+        enteredLeavingHour > 17 ? 17 : enteredLeavingHour;
+      const anchorLeavingMinute =
+        enteredLeavingHour >= 17 ? 0 : enteredLeavingMinute;
+
+      let workedHours = anchorLeavingHour - anchorArrivalHour;
+      let workedMinutes = anchorLeavingMinute - anchorArrivalMinute;
 
       if (workedMinutes < 0) {
         workedMinutes += 60;
         workedHours -= 1;
       }
 
-      let overtimeMinutes = 0;
       let lackTimeMinutes = 0;
-
-      if (workedHours >= 8) {
-        overtimeMinutes = (workedHours - 8) * 60 + workedMinutes;
-      } else {
+      if (workedHours < 8) {
         lackTimeMinutes = (8 - workedHours) * 60 - workedMinutes;
       }
 
@@ -41,7 +48,6 @@ const TimeCalculator = () => {
         date,
         workedHours,
         workedMinutes,
-        overtimeMinutes,
         lackTimeMinutes,
       };
     });
@@ -55,7 +61,7 @@ const TimeCalculator = () => {
       <form onSubmit={calculateWorkedTime}>
         <textarea
           rows="10"
-          placeholder="Paste your time data here (e.g., 2021-08-24 9:15 17:00)"
+          placeholder="Paste your time data here (e.g., 2021-08-24 9:00 17:25)"
           value={timeData}
           onChange={(e) => setTimeData(e.target.value)}
         />
@@ -67,7 +73,6 @@ const TimeCalculator = () => {
           <tr>
             <th>Date</th>
             <th>WorkTime</th>
-            <th>Overtime</th>
             <th>Time Lacking</th>
           </tr>
         </thead>
@@ -76,11 +81,6 @@ const TimeCalculator = () => {
             <tr key={index}>
               <td>{time.date}</td>
               <td>{`${time.workedHours} hours and ${time.workedMinutes} minutes`}</td>
-              <td>
-                {time.overtimeMinutes > 0
-                  ? `${time.overtimeMinutes} minutes`
-                  : ""}
-              </td>
               <td>
                 {time.lackTimeMinutes > 0
                   ? `${time.lackTimeMinutes} minutes`
